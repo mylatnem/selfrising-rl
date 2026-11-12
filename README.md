@@ -1,4 +1,4 @@
-﻿# SelfRising RL — 2 自由度不倒翁的强化学习实验工程
+# SelfRising RL — 2 自由度不倒翁的强化学习实验工程
 
 把 StackForce 的「开源强化学习不倒翁」模型，改造成一个**可以直接训练、可以做消融、
 可以逐步加深难度**的 RL 学习环境。模型是真的，物理是真的，训练代码是重新写的。
@@ -6,7 +6,7 @@
 - 机器人：2 自由度（两只 MG90S 舵机）+ 自由基座，会倒、能自己站起来
 - 仿真：MuJoCo，物理步长 1 ms，控制频率 50 Hz
 - 算法：Stable-Baselines3 的 PPO（CPU 可训，不需要 GPU）
-- 配套文档：`docs/学习手册.docx`（37 页初学者版：预备知识、逐行讲解、五组实验、自测题与答案）
+- 配套文档：[`docs/学习手册.docx`](docs/学习手册.docx)（43 页初学者版）· 在线读 [`docs/学习手册.md`](docs/学习手册.md)（同一份内容的 Markdown 排版版）
 
 ## 快速开始（Linux）
 
@@ -54,7 +54,7 @@ selfrising-rl/
 │   ├── src/policy_runtime.h#   纯 C 前向推理
 │   ├── include/policy.h    #   权重（占位版，用导出脚本覆盖）
 │   └── tools/export_policy.py  # SB3 .zip -> policy.h
-└── docs/学习手册.docx      # 学习手册
+└── docs/                   # 学习手册（.docx 原版 + .md 排版版）
 ```
 
 ## 环境接口
