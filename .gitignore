@@ -1,0 +1,22 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+runs/
+*.egg-info/
+.pytest_cache/
+.DS_Store
+
+# PlatformIO / VSCode
+.pio/
+.vscode/
+firmware/.pio/
+*.zip
+
+# 部署用的本地密钥（绝不提交）
+.deploy/
+
+# 备份/临时文件
+*.bak
+*.tmp
+~\$*

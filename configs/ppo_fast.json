@@ -1,0 +1,30 @@
+{
+  "name": "ppo_fast",
+  "seed": 0,
+  "n_envs": 8,
+  "total_timesteps": 300000,
+  "policy": "MlpPolicy",
+  "net_arch": [64, 64],
+  "learning_rate": 0.0005,
+  "n_steps": 48,
+  "batch_size": 256,
+  "n_epochs": 5,
+  "gamma": 0.99,
+  "gae_lambda": 0.95,
+  "clip_range": 0.2,
+  "ent_coef": 0.0,
+  "vf_coef": 1.0,
+  "max_grad_norm": 1.0,
+  "target_kl": null,
+  "eval_freq": 20000,
+  "eval_episodes_per_pose": 3,
+  "final_eval_per_pose": 10,
+  "env": {
+    "random_pose": true,
+    "pose_augmentation_deg": 15.0,
+    "action_delay": 0,
+    "obs_noise": 0.0,
+    "domain_randomize": false,
+    "max_episode_seconds": 14.0
+  }
+}

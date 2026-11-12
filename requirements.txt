@@ -1,0 +1,12 @@
+# 仿真与 RL
+mujoco>=3.2
+gymnasium>=1.0
+numpy>=1.26
+
+# 训练
+stable-baselines3>=2.3
+torch>=2.2
+tensorboard>=2.15
+
+# 可视化导出
+imageio>=2.34
