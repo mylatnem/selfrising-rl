@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+﻿#!/usr/bin/env python
 """校验 firmware/include/policy.h 与训练用的 SB3 模型数值一致。
 
 为什么需要:
@@ -129,18 +129,25 @@ def main() -> int:
     obs[1] = [0.0, 0.0, -1.0] + [0.0] * (obs_dim - 3)
     obs[2] = [1.0, 0.0, 0.0] + [0.0] * (obs_dim - 3)
 
-    e_ab, e_bc = [], []
+    # predict 会把动作裁剪到动作空间的上下界; 所以对比裁剪后的值才有意义
+    lo = float(np.min(model.action_space.low))
+    hi = float(np.max(model.action_space.high))
+
+    e_ab, e_bc, raw_max = [], [], 0.0
     for o in obs:
         a_np = forward_numpy(h, o)
         a_th = torch_forward(o)
         a_py = np.asarray(model.predict(o, deterministic=True)[0], dtype=np.float64)
         e_ab.append(np.max(np.abs(a_np - a_th)))
-        e_bc.append(np.max(np.abs(a_th - a_py)))
+        e_bc.append(np.max(np.abs(np.clip(a_th, lo, hi) - a_py)))
+        raw_max = max(raw_max, float(np.max(np.abs(a_th))))
     e_ab, e_bc = np.array(e_ab), np.array(e_bc)
 
-    print(f"\n样本数   : {len(obs)}")
-    print(f"[A] 头文件→numpy vs [B] torch : 最大误差 {e_ab.max():.3e}")
-    print(f"[B] torch    vs [C] predict   : 最大误差 {e_bc.max():.3e}")
+    print(f"\n样本数   : {len(obs)}   动作空间: [{lo:g}, {hi:g}]")
+    print(f"[A] 头文件→numpy vs [B] torch        : 最大误差 {e_ab.max():.3e}   ← 判定导出是否正确")
+    print(f"[B] 裁剪到动作空间后 vs [C] predict  : 最大误差 {e_bc.max():.3e}   ← 应接近 0")
+    if raw_max > hi + 1e-3:
+        print(f"    (说明: 随机观测在网络训练分布之外, 原始输出最大到 {raw_max:.2f}, 会被 predict 裁到 {hi:g})")
 
     if e_ab.max() > 1e-4:
         e_alt = max(np.max(np.abs(forward_numpy(h, o, col_major=True) - torch_forward(o))) for o in obs[:20])
