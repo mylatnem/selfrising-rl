@@ -116,6 +116,7 @@ class SelfRisingEnv(gym.Env):
         self.prev_action = np.zeros(self.idx.n_joints, dtype=np.float64)
         self.prev_upright = 1.0
         self.hold_time = 0.0
+        self.no_contact_time = 0.0
         self.current_pose = "roll_pos"
         self._delay_buf = [np.zeros(self.idx.n_joints) for _ in range(self.action_delay)]
         self._last_terms: dict[str, float] = {}
@@ -207,6 +208,7 @@ class SelfRisingEnv(gym.Env):
         self.time = 0.0
         self.step_count = 0
         self.hold_time = 0.0
+        self.no_contact_time = 0.0
         self.prev_action = np.zeros(self.idx.n_joints)
         self.prev_upright = self.upright
         self._delay_buf = [np.zeros(self.idx.n_joints) for _ in range(self.action_delay)]
@@ -243,9 +245,13 @@ class SelfRisingEnv(gym.Env):
         self.hold_time = self.hold_time + self.effective_dt if upright_enough else 0.0
         success = self.hold_time >= self.reward_cfg.hold_seconds
 
-        # 失败: 掉出地面, 或数值炸掉
+        # 失败: 长时间不接触地面(被弹飞/穿模), 或数值炸掉
+        # 注: qpos[2] 是 foot 这个 body 坐标系原点的 z, 不是机器人的高度
+        #     (原点在几何体之外), 所以不能拿它判断"掉出地面", 用接触点数更可靠。
+        in_contact = self.data.ncon > 0
+        self.no_contact_time = 0.0 if in_contact else self.no_contact_time + self.effective_dt
         failed = bool(
-            height < -0.05
+            self.no_contact_time > 0.5
             or not np.all(np.isfinite(self.data.qpos))
             or np.max(np.abs(self.data.qvel)) > 100.0
         )
