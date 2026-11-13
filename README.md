@@ -6,9 +6,7 @@
 - 机器人：2 自由度（两只 MG90S 舵机）+ 自由基座，会倒、能自己站起来
 - 仿真：MuJoCo，物理步长 1 ms，控制频率 50 Hz
 - 算法：Stable-Baselines3 的 PPO（CPU 可训，不需要 GPU）
-- **主教材**：[`docs/学习手册-最终版.md`](docs/学习手册-最终版.md) —— 面向零基础，从 MJCF 语法、MDP 怎么写，到训练诊断与部署，全流程 27 章 + 5 个附录
-- 进阶读物：[`docs/学习手册.docx`](docs/学习手册.docx)（43 页，逐行读已完成的代码）· [`docs/学习手册.md`](docs/学习手册.md)（同一份的 Markdown 版）
-- 快速上手：[`docs/从零构建工程.md`](docs/从零构建工程.md)（九个阶段 + 验收关卡 + 三个真实 bug 的排查过程）
+- **学习教材**：[`docs/学习手册-最终版.md`](docs/学习手册-最终版.md) —— 面向零基础，27 章 + 5 个附录（约 55 页）：MJCF 语法详解、从 CAD 到模型、MDP 怎么写、训练与诊断、评测与部署
 
 ## 快速开始（Linux）
 
@@ -56,7 +54,7 @@ selfrising-rl/
 │   ├── src/policy_runtime.h#   纯 C 前向推理
 │   ├── include/policy.h    #   权重（占位版，用导出脚本覆盖）
 │   └── tools/export_policy.py  # SB3 .zip -> policy.h
-└── docs/                   # 学习手册（.docx 原版 + .md 排版版）
+└── docs/学习手册-最终版.md  # 学习教材（27 章）
 ```
 
 ## 环境接口
@@ -118,7 +116,7 @@ selfrising-rl/
 - 上述文件**仅用于学习研究**，本仓库不声称拥有其著作权、也不对其授予 MIT/GPL，
   商用或再发布前请自行联系权利人。
 
-完整说明见 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) 与 `docs/学习手册.docx` 附录 D。
+完整说明见 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)。
 
 ## 公开托管的说明
 
