@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+﻿#!/usr/bin/env bash
 # 压力阶梯评测: 同一个策略, 在"越来越像真机"的环境里表现如何。
 #
 # 用法:
@@ -26,13 +26,19 @@ if [ ! -d .venv ]; then
     exit 1
 fi
 
+# 不用先 source activate: 直接优先用 .venv 里的解释器
+if [ -x ".venv/bin/python" ]; then
+    PY=".venv/bin/python"
+else
+    PY="python"
+fi
+
 : > "$OUT"
 run() {
     local name="$1" env="$2"
     echo "### ${name}    env=${env}" | tee -a "$OUT"
-    python -m scripts.evaluate --model "$MODEL" --episodes 10 --env-json "$env" 2>&1 \
-        | tail -n 8 | tee -a "$OUT"
-    echo | tee -a "$OUT"
+    "$PY" -m scripts.evaluate --model "$MODEL" --episodes 10 --env-json "$env" 2>&1 \
+        | tail -n 8 | tee -a "$OUT"    echo | tee -a "$OUT"
 }
 
 echo "模型: ${MODEL}"
