@@ -42,6 +42,11 @@ class RewardConfig:
     w_joint_vel: float = -0.001
     # 成功/失败
     w_success: float = 10.0
+    # 关键: 回合是"成功即结束"的, 而奖励是每步给的。提前成功 = 主动放弃后面每步的分,
+    # 于是"差一点站住、撑满全场"反而更划算(实测 1154 分 vs 246 分), 策略会理性地拒绝成功。
+    # 这个系数让成功时把"剩余步数 × 每步满分"一次性补给你, 成功就不再比赖着差。
+    # 设为 0 可关闭(退回旧行为)。
+    w_success_horizon: float = 1.0
     w_fail: float = -5.0
     # 成功判定
     # 参考 StackForce reference-learning.json 的 success 段: 除了倾角和保持时间,
@@ -67,6 +72,7 @@ def compute_reward(
     failed: bool,
     cfg: RewardConfig,
     joints: np.ndarray | None = None,
+    remaining_steps: float = 0.0,
 ) -> tuple[float, dict[str, float]]:
     """返回 (总奖励, 各项明细)。明细会写进 info, 便于排查"为什么学不会"。"""
     terms: dict[str, float] = {}
@@ -85,7 +91,9 @@ def compute_reward(
         terms["joint_goal"] = cfg.w_joint_goal * gate * max(0.0, closeness)
 
     if success:
-        terms["success"] = cfg.w_success
+        # 成功即结束, 用"剩余步数 × 每步满分"补偿被砍掉的未来收益, 否则早点成功是亏的
+        ceiling = cfg.w_upright + cfg.w_joint_goal
+        terms["success"] = cfg.w_success + cfg.w_success_horizon * max(0.0, remaining_steps) * ceiling
     if failed:
         terms["fail"] = cfg.w_fail
 

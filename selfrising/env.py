@@ -273,6 +273,7 @@ class SelfRisingEnv(gym.Env):
             failed=failed,
             cfg=self.reward_cfg,
             joints=joints_now,
+            remaining_steps=(self.max_episode_seconds - self.time) / max(self.effective_dt, 1e-9),
         )
         self._last_terms = terms
         self.prev_upright = upright

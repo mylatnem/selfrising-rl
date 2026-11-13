@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+﻿#!/usr/bin/env python
 """PPO 训练入口。
 
 用法(Linux):
@@ -114,7 +114,10 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.resume:
         model = PPO.load(args.resume, env=vec_env, device=args.device)
-        print(f"从 {args.resume} 继续训练")
+        # PPO.load 会把旧的 tensorboard_log 一起带回来, 那样重训的曲线会写进旧实验目录,
+        # 和新实验混在一起分不清。这里强行指到本次的 run_dir。
+        model.tensorboard_log = str(run_dir / "tb")
+        print(f"从 {args.resume} 继续训练 (tensorboard -> {run_dir / 'tb'})")
     else:
         model = PPO(
             cfg.get("policy", "MlpPolicy"),

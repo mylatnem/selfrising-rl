@@ -122,6 +122,16 @@ def test_reward_terms() -> None:
     )
     assert t_success["success"] == cfg.w_success
 
+    # 成功时补偿"剩余步数的满分": 否则提前成功不如赖着不动(实测 246 vs 1154 分)
+    idling = 701 * (cfg.w_upright + cfg.w_joint_goal)
+    _, t_h = compute_reward(
+        upright=1.0, prev_upright=1.0, height=0.08, action=np.zeros(2),
+        prev_action=np.zeros(2), joint_vel=np.zeros(2), success=True, failed=False, cfg=cfg,
+        joints=np.zeros(2), remaining_steps=566.0,
+    )
+    total_if_success_now = 135 * (cfg.w_upright + cfg.w_joint_goal) + t_h["success"]
+    assert total_if_success_now >= idling, (total_if_success_now, idling)
+
     _, t_fail = compute_reward(
         upright=0.0, prev_upright=0.0, height=-0.2, action=np.zeros(2),
         prev_action=np.zeros(2), joint_vel=np.zeros(2), success=False, failed=True, cfg=cfg,
