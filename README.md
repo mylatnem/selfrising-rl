@@ -52,7 +52,7 @@ selfrising-rl/
 │   ├── platformio.ini
 │   ├── src/main.cpp        #   50 Hz 循环 + 观测拼装 + 舵机输出
 │   ├── src/policy_runtime.h#   纯 C 前向推理
-│   ├── include/policy.h    #   权重（占位版，用导出脚本覆盖）
+│   ├── include/policy.h    #   权重（已带 ppo_robust_ft2 的真实权重，评测 100%）
 │   └── tools/export_policy.py  # SB3 .zip -> policy.h
 └── docs/学习手册-最终版.md  # 学习教材（27 章）
 ```

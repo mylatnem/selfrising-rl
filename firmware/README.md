@@ -12,7 +12,7 @@
 ```
 firmware/
 ├── platformio.ini          # 板型、框架、依赖
-├── include/policy.h        # 权重（占位版全零；用导出脚本覆盖）
+├── include/policy.h        # 权重（已带 ppo_robust_ft2 的真实权重；重训后覆盖）
 ├── src/
 │   ├── main.cpp            # 50 Hz 主循环、观测拼装、舵机输出
 │   └── policy_runtime.h    # 纯 C 前向推理（不依赖任何推理框架）
@@ -91,7 +91,7 @@ pio device monitor
 
 | 现象 | 先查 |
 |---|---|
-| 编译报 `POLICY_IN` 未定义 | `include/policy.h` 被删了，重新导出或恢复占位版 |
+| 编译报 `POLICY_IN` 未定义 | `include/policy.h` 丢了：重新导出，或 `git checkout -- include/policy.h` |
 | 串口全是 `g=(0,0,-1)` | BNO055 没认到：查 I2C 接线与 0x29 地址 |
 | 舵机一直不动 | `DRY_RUN` 还是 1 |
 | 舵机往一个方向顶死 | `SERVO_DIR_*` 与行程没标定 |
