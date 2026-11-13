@@ -159,7 +159,9 @@ def main() -> int:
 
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(text, encoding="utf-8")
+    # utf-8-sig = 带 BOM。不加 BOM 时, Windows 上的编辑器可能按 GBK 解码,
+    # 中文注释会变成乱码(不影响编译, 但没法读)。
+    out.write_text(text, encoding="utf-8-sig")
 
     wmax = max(abs(v) for v in meta["w"]) if meta["w"] else 0.0
     print(f"已写入 {out}")
