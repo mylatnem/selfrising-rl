@@ -240,8 +240,14 @@ class SelfRisingEnv(gym.Env):
         height = float(self.data.qpos[self.idx.free_qpos_adr + 2])
         dq = self.data.qvel[list(self.idx.dof_adr)]
 
-        # 成功: 倾角达标并保持 hold_seconds
-        upright_enough = tilt <= self.reward_cfg.success_tilt_deg
+        # 成功: 倾角达标 + 关节回到 0 附近 + 基座基本静止, 并保持 hold_seconds
+        joints_now = self.data.qpos[list(self.idx.qpos_adr)]
+        base_speed = float(np.linalg.norm(self.data.qvel[:3]))
+        upright_enough = bool(
+            tilt <= self.reward_cfg.success_tilt_deg
+            and np.max(np.abs(joints_now)) <= self.reward_cfg.success_joint_tol
+            and base_speed <= self.reward_cfg.success_base_speed
+        )
         self.hold_time = self.hold_time + self.effective_dt if upright_enough else 0.0
         success = self.hold_time >= self.reward_cfg.hold_seconds
 

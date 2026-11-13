@@ -34,7 +34,11 @@ class RewardConfig:
     w_success: float = 10.0
     w_fail: float = -5.0
     # 成功判定
+    # 参考 StackForce reference-learning.json 的 success 段: 除了倾角和保持时间,
+    # 还要求两个关节都回到接近 0 (goal 姿态) 且基座基本静止, 否则"站着但还在扭"也算成功。
     success_tilt_deg: float = 14.32
+    success_joint_tol: float = 0.12      # rad, 关节角与 0 的允许误差
+    success_base_speed: float = 0.25     # m/s, 基座线速度上限
     hold_seconds: float = 1.0
 
     def to_dict(self) -> dict:
