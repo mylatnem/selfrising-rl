@@ -92,14 +92,27 @@ def test_reward_terms() -> None:
     assert abs(terms["progress"] - 0.2 * 0.5) < 1e-9
     assert abs(total - sum(terms.values())) < 1e-9
 
-    # 终态整形: 站直且关节在 0 -> 满额; 关节偏 1.5 rad -> 几乎为 0
+    # 终态整形: 站直且关节在 0 -> 满额; 越偏离越少, 但全程要有梯度(不能是高斯那种死平)
     assert abs(terms["joint_goal"] - cfg.w_joint_goal) < 1e-9
     _, t_off = compute_reward(
         upright=1.0, prev_upright=1.0, height=0.08, action=np.zeros(2),
         prev_action=np.zeros(2), joint_vel=np.zeros(2), success=False, failed=False, cfg=cfg,
         joints=np.array([1.5, 0.0]),
     )
-    assert t_off["joint_goal"] < 1e-4
+    assert 0.3 < t_off["joint_goal"] < 0.6 * cfg.w_joint_goal, t_off["joint_goal"]
+    _, t_lim = compute_reward(
+        upright=1.0, prev_upright=1.0, height=0.08, action=np.zeros(2),
+        prev_action=np.zeros(2), joint_vel=np.zeros(2), success=False, failed=False, cfg=cfg,
+        joints=np.array([1.5708, -1.5708]),
+    )
+    assert t_lim["joint_goal"] >= 0.0 and t_lim["joint_goal"] < 0.05
+    # 躺着时门控为 0, 不该靠折手臂白拿分
+    _, t_lying = compute_reward(
+        upright=0.0, prev_upright=0.0, height=0.08, action=np.zeros(2),
+        prev_action=np.zeros(2), joint_vel=np.zeros(2), success=False, failed=False, cfg=cfg,
+        joints=np.zeros(2),
+    )
+    assert abs(t_lying["joint_goal"]) < 1e-12
     # 高度项默认关闭(它是 qpos[2], 没有物理意义)
     assert abs(terms["height"]) < 1e-12
 

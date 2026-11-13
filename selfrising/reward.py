@@ -28,10 +28,12 @@ class RewardConfig:
     height_scale: float = 100.0
     height_target: float = 0.08
     # 终态整形: 站直之后把两个关节收回 0 (成功判定的 goal 姿态)。
-    # 成功判定是稀疏的, 没有这一项几乎不可能被探索到; 用 upright² 做门控,
-    # 只在"已经基本站直"时才给, 避免策略为了拿分把手臂折起来。
-    w_joint_goal: float = 0.5
-    joint_goal_sigma: float = 0.25
+    # 形状用"线性斜坡"而不是高斯: 高斯在 1.5 rad 处已经衰减到 1e-17, 梯度为零,
+    # 策略会站在 q=±1.57(限位) 上安心拿 upright 分, 永远不知道还有这一项。
+    # 现在 q²/(2*limit²) 让奖励在全程都有梯度, 越靠近 0 越赚。
+    # 用 upright² 门控: 只在"已经基本站直"时才给, 避免策略为了拿分把手臂折起来。
+    w_joint_goal: float = 0.75
+    joint_limit: float = 1.5708
     # 进展: 只在"比上一步更直"时给分, 防止原地抖动白拿分
     w_progress: float = 0.2
     # 动作变化率: 抑制高频抖动, 也是上真机最关键的平滑项
@@ -78,9 +80,9 @@ def compute_reward(
     if joints is not None:
         q = np.asarray(joints, dtype=np.float64)
         gate = max(0.0, float(upright)) ** 2
-        terms["joint_goal"] = cfg.w_joint_goal * gate * float(
-            np.exp(-np.sum(q * q) / (2.0 * cfg.joint_goal_sigma ** 2))
-        )
+        # 1.0 (关节在 0) -> 0.0 (关节顶到限位), 线性、处处有梯度
+        closeness = 1.0 - float(np.sum(q * q)) / (2.0 * cfg.joint_limit ** 2)
+        terms["joint_goal"] = cfg.w_joint_goal * gate * max(0.0, closeness)
 
     if success:
         terms["success"] = cfg.w_success
