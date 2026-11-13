@@ -85,11 +85,23 @@ def test_reward_terms() -> None:
     total, terms = compute_reward(
         upright=1.0, prev_upright=0.5, height=0.08, action=np.zeros(2),
         prev_action=np.zeros(2), joint_vel=np.zeros(2), success=False, failed=False, cfg=cfg,
+        joints=np.zeros(2),
     )
     assert "upright" in terms and "progress" in terms
     assert abs(terms["upright"] - 1.0) < 1e-9
     assert abs(terms["progress"] - 0.2 * 0.5) < 1e-9
     assert abs(total - sum(terms.values())) < 1e-9
+
+    # 终态整形: 站直且关节在 0 -> 满额; 关节偏 1.5 rad -> 几乎为 0
+    assert abs(terms["joint_goal"] - cfg.w_joint_goal) < 1e-9
+    _, t_off = compute_reward(
+        upright=1.0, prev_upright=1.0, height=0.08, action=np.zeros(2),
+        prev_action=np.zeros(2), joint_vel=np.zeros(2), success=False, failed=False, cfg=cfg,
+        joints=np.array([1.5, 0.0]),
+    )
+    assert t_off["joint_goal"] < 1e-4
+    # 高度项默认关闭(它是 qpos[2], 没有物理意义)
+    assert abs(terms["height"]) < 1e-12
 
     _, t_success = compute_reward(
         upright=1.0, prev_upright=1.0, height=0.08, action=np.zeros(2),

@@ -272,6 +272,7 @@ class SelfRisingEnv(gym.Env):
             success=success,
             failed=failed,
             cfg=self.reward_cfg,
+            joints=joints_now,
         )
         self._last_terms = terms
         self.prev_upright = upright

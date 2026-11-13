@@ -20,10 +20,18 @@ import numpy as np
 class RewardConfig:
     # 站直奖励: 基座 z 轴与世界 z 轴的点积, [-1, 1]
     w_upright: float = 1.0
-    # 高度: 偏离目标高度(0.08 m)的二次惩罚
-    w_height: float = 0.5
+    # 高度项默认关闭。
+    # 曾经写 -0.5, 但 height 取的是 qpos[2] —— 那是 foot 这个 body 坐标系原点的 z,
+    # 原点在几何体之外, 站直时反而会掉到 -0.05, 于是"站起来"每步要挨 0.85 的罚,
+    # 策略学会的是"躺着别动"。要用这个量必须先把它换成有物理意义的高度。
+    w_height: float = 0.0
     height_scale: float = 100.0
     height_target: float = 0.08
+    # 终态整形: 站直之后把两个关节收回 0 (成功判定的 goal 姿态)。
+    # 成功判定是稀疏的, 没有这一项几乎不可能被探索到; 用 upright² 做门控,
+    # 只在"已经基本站直"时才给, 避免策略为了拿分把手臂折起来。
+    w_joint_goal: float = 0.5
+    joint_goal_sigma: float = 0.25
     # 进展: 只在"比上一步更直"时给分, 防止原地抖动白拿分
     w_progress: float = 0.2
     # 动作变化率: 抑制高频抖动, 也是上真机最关键的平滑项
@@ -56,6 +64,7 @@ def compute_reward(
     success: bool,
     failed: bool,
     cfg: RewardConfig,
+    joints: np.ndarray | None = None,
 ) -> tuple[float, dict[str, float]]:
     """返回 (总奖励, 各项明细)。明细会写进 info, 便于排查"为什么学不会"。"""
     terms: dict[str, float] = {}
@@ -65,6 +74,13 @@ def compute_reward(
     terms["progress"] = cfg.w_progress * max(0.0, float(upright) - float(prev_upright))
     terms["action_rate"] = cfg.w_action_rate * float(np.sum((np.asarray(action) - np.asarray(prev_action)) ** 2))
     terms["joint_vel"] = cfg.w_joint_vel * float(np.sum(np.asarray(joint_vel) ** 2))
+
+    if joints is not None:
+        q = np.asarray(joints, dtype=np.float64)
+        gate = max(0.0, float(upright)) ** 2
+        terms["joint_goal"] = cfg.w_joint_goal * gate * float(
+            np.exp(-np.sum(q * q) / (2.0 * cfg.joint_goal_sigma ** 2))
+        )
 
     if success:
         terms["success"] = cfg.w_success
