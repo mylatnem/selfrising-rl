@@ -7,6 +7,7 @@
 - 仿真：MuJoCo，物理步长 1 ms，控制频率 50 Hz
 - 算法：Stable-Baselines3 的 PPO（CPU 可训，不需要 GPU）
 - 配套文档：[`docs/学习手册.docx`](docs/学习手册.docx)（43 页初学者版）· 在线读 [`docs/学习手册.md`](docs/学习手册.md)（同一份内容的 Markdown 排版版）
+- 想自己从零做一遍：[`docs/从零构建工程.md`](docs/从零构建工程.md)（九个阶段 + 每阶段的验收关卡 + 三个真实 bug 的排查过程）
 
 ## 快速开始（Linux）
 
