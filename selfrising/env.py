@@ -196,7 +196,7 @@ class SelfRisingEnv(gym.Env):
         self.data.qvel[:] = 0.0
 
         self.target[:] = 0.0
-        self.data.ctrl[self.idx.actuator_ids] = 0.0
+        self.data.ctrl[list(self.idx.actuator_ids)] = 0.0
         mujoco.mj_forward(self.model, self.data)
 
         # 落定: 用零目标保持一小段时间, 让机器人先稳定在跌倒姿态上
@@ -227,7 +227,7 @@ class SelfRisingEnv(gym.Env):
         self.target = np.clip(
             self.target + action * self.action_delta, -self.action_limit, self.action_limit
         )
-        self.data.ctrl[self.idx.actuator_ids] = self.target
+        self.data.ctrl[list(self.idx.actuator_ids)] = self.target
 
         mujoco.mj_step(self.model, self.data, nstep=self.frame_skip)
         self.time += self.effective_dt
