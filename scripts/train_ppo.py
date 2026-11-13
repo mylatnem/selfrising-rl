@@ -90,11 +90,19 @@ def main(argv: list[str] | None = None) -> int:
         env_kwargs.update({"fixed_pose": args.pose, "random_pose": False})
 
     run_dir = runs_dir(run_name)
+    env_cfg = cfg.get("env", {})
+    aug = float(env_cfg.get("pose_augmentation_deg", 15.0))
     print("=" * 62)
     print(f"运行目录 : {run_dir}")
-    print(f"姿态     : {args.pose or '四个姿态随机(含 ±15° 扰动)'}")
+    print(f"姿态     : {args.pose or f'四个姿态随机(±{aug:g}° 扰动)'}")
     print(f"并行环境 : {n_envs}")
     print(f"总步数   : {total_timesteps:,}")
+    # 这几项决定 sim2real 的难度, 打印出来免得对照配置时看错
+    if env_cfg.get("domain_randomize") or env_cfg.get("action_delay") or env_cfg.get("obs_noise"):
+        print(
+            f"真机扰动 : 域随机化={env_cfg.get('domain_randomize', False)} "
+            f"动作延迟={env_cfg.get('action_delay', 0)} 观测噪声={env_cfg.get('obs_noise', 0.0)}"
+        )
     print("=" * 62)
 
     factory = EnvFactory(env_kwargs)
